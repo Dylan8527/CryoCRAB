@@ -7,9 +7,8 @@ import logging
 
 logger = logging.getLogger()
 
-from . import EMPIAR
+from . import EMPIAR, get_project_root
 from .helper_func import timer
-
 
 class ImageCategory(str, enum.Enum):
     """
@@ -170,16 +169,27 @@ class CryoCRAB_Gain_SuffixType(str, enum.Enum):
     MRC: str=".MRC"
     gain: str=".gain"
 
+class DownloadMode(str, enum.Enum):
+    local: str="local"
+    cluster: str="cluster"
+
 class CryoCRAB_DataManager(object):
     
-    def __init__(self):
+    def __init__(self, 
+        storage_mode: DownloadMode=DownloadMode.local
+    ):
         
-        # storage cluster info
-        self.storage_host: str="10.15.56.104"
-        self.storage_port: int=28111
-        self.storage_username: str="cellverse"
-        self.storage_password: str="Cellverse123!"
-        self.storage_cryocrab_datadir: str="/mnt/cryocrab_storage"
+        if storage_mode == DownloadMode.local:
+            project_dir = get_project_root()
+            self.storage_cryocrab_datadir = project_dir
+        else:
+            raise NotImplementedError("Cluster mode is not implemented yet.")
+            # storage cluster info
+            self.storage_host: str="10.15.56.104"
+            self.storage_port: int=28111
+            self.storage_username: str="cellverse"
+            self.storage_password: str="Cellverse123!"
+            self.storage_cryocrab_datadir: str="/mnt/cryocrab_storage"
         
         # empiar ftp info
         self.empiar_ftp_host: str=EMPIAR().EMPIAR_IP
@@ -234,7 +244,7 @@ class CryoCRAB_DataManager(object):
         local_file_size = self.get_local_file_size(local_path)
         
         if local_file_size == -1:
-            logger.info("%s -> %s", ftp_path, local_path)
+            logger.info("Start FTP Download %s -> %s", ftp_path, local_path)
             @timer
             def main(ftp_path, local_path):
                 with open(local_path, "wb") as f:
@@ -246,7 +256,12 @@ class CryoCRAB_DataManager(object):
             
         ftp.close()
         
-        return ftp_file_size, local_file_size 
+        if ftp_file_size == local_file_size:
+            return ftp_file_size, local_file_size
+        else:
+            local_path.unlink()
+        
+        return ftp_file_size, local_file_size
         
     
 class SingleImageTestStatus(str, enum.Enum):
@@ -255,8 +270,8 @@ class SingleImageTestStatus(str, enum.Enum):
     """
     testing: str="testing"
     downloading: str="downloading"
-    unpacking: str="unpacking"
-    compressing: str="compressing"
+    # unpacking: str="unpacking"
+    # compressing: str="compressing"
     passed: str="passed"
     failed: str="failed"
     

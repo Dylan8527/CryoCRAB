@@ -69,14 +69,46 @@ def mongodb_dataset_have_a_look():
     print("================================================\n\n")
 
 def cryosparc_data_process():
+    from CryoCRAB.utils.datatype import SingleImageTestStatus, CryoCRAB_DataManager, DownloadMode, CryoCRAB_Download_DataType
+    from CryoCRAB.pipeline.cryosparc_data_process.helper_func \
+        import update_dataset_SingleImageTestStatus, get_ftp_download_path, unset_dataset_SingleImageTestStatus
+    from CryoCRAB.utils.cryosparc import get_cryosparc_client
+    print("================================================")
     # Step0: single image test for each dataset
-    micrograph_dataset_processing_single_image_test()
+    micrograph_dataset = get_spa_micrograph_dataset()
+    document = micrograph_dataset.find_one({
+        "status.single_image_test": {"$exists": False}, 
+        "image_num": {"$gte": 0}
+    }) # find one document without tested
+    update_dataset_SingleImageTestStatus(micrograph_dataset, document, SingleImageTestStatus.testing)
+    
+    # download
+    update_dataset_SingleImageTestStatus(micrograph_dataset, document, SingleImageTestStatus.downloading)
+    cryocrab_datamanager = CryoCRAB_DataManager(DownloadMode.local)
+    empiar_ftp_directory = document["empiar_ftp_directory"]
+    empiar_relative_directory = document["empiar_relative_directory"]
+    empiar_image_relative_path = document["empiar_image_relative_paths"][0]
+    ftp_path = get_ftp_download_path(empiar_ftp_directory, empiar_relative_directory, empiar_image_relative_path)
+    ftp_file_size, local_file_size = cryocrab_datamanager.download_via_ftp(document["imageset_name"], ftp_path, CryoCRAB_Download_DataType.micrograph)
+    if ftp_file_size != local_file_size:
+        print(f"Download failed: {ftp_path}")
+        unset_dataset_SingleImageTestStatus(micrograph_dataset, document)
+        
+    cs = get_cryosparc_client()
+
+    # debug 
+    unset_dataset_SingleImageTestStatus(micrograph_dataset, document)
+    print("================================================\n\n")
     
 def main():
-    pipeline_empiar_data_curation()
-    mongodb_dataset_generation()
-    mongodb_dataset_have_a_look()
+    # pipeline_empiar_data_curation()
+    # mongodb_dataset_generation()
+    # mongodb_dataset_have_a_look()
+    cryosparc_data_process()
     pass
     
 if __name__ == "__main__":
+    from CryoCRAB.utils import get_project_name, get_project_root
+    project_root = get_project_root()
+    print(f"{project_root = }")
     main()

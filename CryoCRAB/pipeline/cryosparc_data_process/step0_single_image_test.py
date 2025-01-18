@@ -15,7 +15,7 @@ PROJECT_SAVE_DIR = get_project_save_dir()
 
 from ...utils.datatype import DeterminationMethod
 from ...utils.mongodb import get_spa_micrograph_dataset, get_empiar_dataset
-from ...utils.datatype import SingleImageTestStatus, CryoCRAB_DataManager, CryoCRAB_Download_DataType
+from ...utils.datatype import SingleImageTestStatus, CryoCRAB_DataManager, CryoCRAB_Download_DataType, DownloadMode
 
 from .helper_func import get_ftp_download_path, update_dataset_SingleImageTestStatus, unset_dataset_SingleImageTestStatus, update_dataset_col_with_docID_key_value
 
@@ -64,26 +64,3 @@ def update_empiar_dataset_image_and_gain_suffix():
             gain_suffix = os.path.splitext(doc["empiar_gain_relative_paths"][0])[1]
             update_dataset_col_with_docID_key_value(empiar_dataset, doc["_id"], "gain_suffix", gain_suffix)
             
-def micrograph_dataset_processing_single_image_test():
-    
-    micrograph_dataset = get_spa_micrograph_dataset()
-    document = micrograph_dataset.find_one({
-        "status.single_image_test": {"$exists": False}, 
-        "image_num": {"$gte": 0}
-    }) # find one document without tested
-    update_dataset_SingleImageTestStatus(micrograph_dataset, document, SingleImageTestStatus.testing)
-    
-    # download
-    update_dataset_SingleImageTestStatus(micrograph_dataset, document, SingleImageTestStatus.downloading)
-    cryocrab_datamanager = CryoCRAB_DataManager()
-    empiar_ftp_directory = document["empiar_ftp_directory"]
-    empiar_relative_directory = document["empiar_relative_directory"]
-    empiar_image_relative_path = document["empiar_image_relative_paths"][0]
-    ftp_path = get_ftp_download_path(empiar_ftp_directory, empiar_relative_directory, empiar_image_relative_path)
-    ftp_file_size, local_file_size = cryocrab_datamanager.download_via_ftp(document["imageset_name"], ftp_path, CryoCRAB_Download_DataType.micrograph)
-    
-    if ftp_file_size == local_file_size:
-        pass         
-
-    # debug 
-    unset_dataset_SingleImageTestStatus(micrograph_dataset, document)
