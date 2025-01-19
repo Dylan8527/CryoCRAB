@@ -244,7 +244,7 @@ class CryoCRAB_DataManager(object):
         local_file_size = self.get_local_file_size(local_path)
         
         if local_file_size == -1 or ftp_file_size != local_file_size:
-            if ftp_file_size != local_file_size:
+            if local_file_size > 0:
                 local_path.unlink()
             logger.info("Start FTP Download %s -> %s", ftp_path, local_path)
             @timer

@@ -51,5 +51,6 @@ def save_empiar_structures():
     logger.debug(f"{PROJECT_NAME} FTP {len(empiar_ids)} EMPIAR IDs")
     for empiar_id in tqdm(empiar_ids, "Crawl EMPIAR structures"):
         if not EMPIAR_STRUCTURE_FILE(empiar_id).exists():
+            logger.debug(f"{empiar_id} -> {EMPIAR_STRUCTURE_FILE(empiar_id)}")
             save_empiar_structure(empiar_id)
     logger.info(f"{PROJECT_NAME} save {len(empiar_ids)} EMPIAR IDs to {EMPIAR_STRUCTURE_DIR}")
