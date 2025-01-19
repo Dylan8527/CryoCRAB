@@ -6,7 +6,8 @@ CryoCRAB: A Curated-Filterable Dataset for Building Cryo-EM Foundation Model
   - [x] MongoDB Dataset Generation Notebook
   - [x] EMPIAR Download Example Notebook
   - [x] CryoSPARC Automated Processing Notebook
-  - [ ] CryoCRAB Preprocessing Notebook
+  - [x] CryoCRAB Preprocessing Example Notebook
+  - [ ] CryoCRAB Full-Diff HDF5 Pair Generation Notebook
 - Visualization List
   - [ ] Motion Correction & Visualization Notebook
   - [ ] CTF Correction & Visualization Notebook

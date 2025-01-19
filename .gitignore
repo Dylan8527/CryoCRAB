@@ -173,3 +173,5 @@ cython_debug/
 Data/
 
 CryoCRAB/__init__.py
+
+CryoCRAB/utils_csparc/
