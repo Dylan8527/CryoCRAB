@@ -243,7 +243,9 @@ class CryoCRAB_DataManager(object):
         local_path.parent.mkdir(parents=True, exist_ok=True)        
         local_file_size = self.get_local_file_size(local_path)
         
-        if local_file_size == -1:
+        if local_file_size == -1 or ftp_file_size != local_file_size:
+            if ftp_file_size != local_file_size:
+                local_path.unlink()
             logger.info("Start FTP Download %s -> %s", ftp_path, local_path)
             @timer
             def main(ftp_path, local_path):
@@ -253,7 +255,8 @@ class CryoCRAB_DataManager(object):
                 return local_file_size 
             local_file_size, time_st, time_ed = main(ftp_path, local_path)
             logger.info("FTP download costs: {:.2f} s.".format(time_ed - time_st))
-            
+        elif ftp_file_size == local_file_size:
+            logger.info("Already exists FTP Download %s -> %s", ftp_path, local_path)
         ftp.close()
         
         if ftp_file_size == local_file_size:

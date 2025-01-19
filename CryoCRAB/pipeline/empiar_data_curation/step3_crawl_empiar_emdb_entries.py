@@ -251,11 +251,14 @@ def parse_empiar_emdb_pair(pair_dict: dict, image_max_num=1000) -> list[DatasetD
         
     return imagesets_doc_list
         
-def save_empiar_emdb_entries():
+def save_empiar_emdb_entries(empiar_ids: str | list[str] =None):
     """
     Save the EMPIAR-EMDB entries
     """
-    empiar_ids = load_empiar_ids()
+    if empiar_ids is None:
+        empiar_ids = load_empiar_ids()
+    elif type(empiar_ids) is not list:
+        empiar_ids = [empiar_ids]
     empiar_ids = empiar_id_patch(empiar_ids)
     
     EMDB_ENTRY_DIR.mkdir(parents=True, exist_ok=True)

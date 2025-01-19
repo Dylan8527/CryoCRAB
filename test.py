@@ -19,17 +19,16 @@ def pipeline_empiar_data_curation():
     # Step0: get empiar ids
     empiar_ids = get_empiar_ids()
     empiar_ids = load_empiar_ids()
-    empiar_path_csv = load_empiar_path_csv(empiar_ids[0])
-
-    # Step2: get empiar structures
+    
+    # Step1: get empiar structures
     save_empiar_structures()
     empiar_structure = load_empiar_structure(empiar_ids[0])
     
-    # Step3: get empiar path csv
+    # Step2: get empiar path csv
     save_empiar_path_csvs()
     empiar_path_csv = load_empiar_path_csv(empiar_ids[0])
     
-    # Step4: get empiar emdb json entries
+    # Step3: get empiar emdb json entries
     save_empiar_emdb_entries()
     empiar_emdb_pair = get_empiar_emdb_pair_list(empiar_ids[0])
     print("================================================\n\n")

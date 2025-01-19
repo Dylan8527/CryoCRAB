@@ -127,6 +127,8 @@ def get_empiar_structure(empiar_id: str):
     Get the empiar structure.
     """
     ftp = new_ftp()
+    if empiar_id.startswith('EMPIAR-'):
+        empiar_id = empiar_id[len('EMPIAR-'):]
     ftp_directory = Path(EMPIAR().DIRECTORY) / empiar_id
     ftp_directory = str(ftp_directory)
     empiar_structure = mirror_directory(ftp, ftp_directory)

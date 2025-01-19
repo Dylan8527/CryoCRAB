@@ -20,7 +20,7 @@ def get_cryosparc_client(
         cryosparc_client = CryoSPARC(
             license = license,
             host = host,
-            base_port = base_port,
+            base_port = int(base_port),
             email = email,
             password = password,
             timeout = timeout,
@@ -30,4 +30,23 @@ def get_cryosparc_client(
         logger.error("Failed to create CryoSPARC client: %s", e)
     return cryosparc_client
 
-def get_cryosparc_project
+def get_cryosparc_project(project_id: str=None):
+    """
+    Get the CryoSPARC project
+    """
+    if project_id is None:
+        project_id = os.getenv("CRYOSPARC_PROJECT_ID", None)
+        if project_id is None:
+            raise ValueError("Please set project_id in the environment variable CRYOSPARC_PROJECT_ID.")
+    return get_cryosparc_client().find_project(project_id)
+
+def get_cryosparc_job(job_id: str, project_id: str=None):
+    """
+    Get the CryoSPARC job
+    """
+    project = get_cryosparc_project(project_id)
+    return project.find_job(job_id)
+
+
+        
+    

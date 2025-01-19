@@ -25,8 +25,11 @@ def save_empiar_structure(empiar_id: str):
     """
     EMPIAR_STRUCTURE_DIR.mkdir(parents=True, exist_ok=True)
     empiar_structure = get_empiar_structure(empiar_id)
-    with open(EMPIAR_STRUCTURE_FILE(empiar_id), "w") as f:
-        json.dump(empiar_structure, f, indent=4)
+    if len(empiar_structure) != 0:
+        with open(EMPIAR_STRUCTURE_FILE(empiar_id), "w") as f:
+            json.dump(empiar_structure, f, indent=4)
+    else:
+        logger.error(f"Failed to get EMPIAR structure for {empiar_id}")
         
 def load_empiar_structure(empiar_id: str):
     """
@@ -50,15 +53,3 @@ def save_empiar_structures():
         if not EMPIAR_STRUCTURE_FILE(empiar_id).exists():
             save_empiar_structure(empiar_id)
     logger.info(f"{PROJECT_NAME} save {len(empiar_ids)} EMPIAR IDs to {EMPIAR_STRUCTURE_DIR}")
-    
-def load_empiar_structure(empiar_id: str):
-    """
-    Load the EMPIAR structure for an EMPIAR ID from a json file
-    """
-    if not EMPIAR_STRUCTURE_FILE(empiar_id).exists():
-        logger.warning(f"{PROJECT_NAME} {EMPIAR_STRUCTURE_FILE(empiar_id)} does not exist, save EMPIAR structure first")
-        save_empiar_structure(empiar_id)
-    with open(EMPIAR_STRUCTURE_FILE(empiar_id), "r") as f:
-        empiar_structure = json.load(f)
-    logger.info(f"{PROJECT_NAME} load EMPIAR structure for {empiar_id} from {EMPIAR_STRUCTURE_FILE(empiar_id)}")
-    return empiar_structure
