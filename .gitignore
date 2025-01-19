@@ -171,3 +171,5 @@ cython_debug/
 .pypirc
 
 Data/
+
+CryoCRAB/__init__.py

@@ -40,6 +40,13 @@ def get_cryosparc_project(project_id: str=None):
             raise ValueError("Please set project_id in the environment variable CRYOSPARC_PROJECT_ID.")
     return get_cryosparc_client().find_project(project_id)
 
+def get_cryosparc_workspace(workspace_id: str, project_id: str=None):
+    """
+    Get the CryoSPARC job
+    """
+    project = get_cryosparc_project(project_id)
+    return project.find_workspace(workspace_id)
+
 def get_cryosparc_job(job_id: str, project_id: str=None):
     """
     Get the CryoSPARC job
@@ -47,6 +54,12 @@ def get_cryosparc_job(job_id: str, project_id: str=None):
     project = get_cryosparc_project(project_id)
     return project.find_job(job_id)
 
-
-        
+def get_cryosparc_job_link(pid: str, wid: str, jid: str):
+    host = os.getenv("CRYOSPARC_MASTER_HOSTNAME", "localhost")
+    base_port = int(os.getenv("CRYOSPARC_BASE_PORT", 39000))
+    link = f"http://{host}:{base_port}/browse/{pid}-{wid}-J*#job({pid}-{jid})"
+    markdown_link = f"[Click here to view the job]({link})"
+    return markdown_link
+    
+    
     
