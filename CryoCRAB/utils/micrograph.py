@@ -2,6 +2,7 @@ import numpy as np
 from numba import jit
 from . import fft
 from . import fft_sizes
+# from .background import do_lowpass_filter_2D_herm_gaussian_core
 
 # ----------------------------------------------------- PADDING AND TRIMMING
 
@@ -161,16 +162,20 @@ def show_array(
 def do_lowpass_filter_2D_herm_gaussian_core(
     farr: np.ndarray, 
     frame_shape: tuple, # extra input reason: since this is the shape of micrograph not its FT
-    one_over_sigma2: float,
+    one_over_sigma_fspace2: float,
 ):
     # one_over_sigma2 is of gaussian in fourier space 
     # one_over_sigma_fspace**2 = pi^2 * sigma_real^2 in terms of the sigma in real space
     ny, nx = farr.shape
     freqs = fft.get_rfft_center_freqs(frame_shape, psize_A=1.0)
-    filt = np.exp(- np.linalg.norm(freqs, axis=-1) * 0.5 * one_over_sigma2)
+    freqs_y = freqs[..., 0] * frame_shape[0] # unit: 1
+    freqs_x = freqs[..., 1] * frame_shape[1] # unit: 1
+    freqs_norm2 = freqs_y**2 + freqs_x**2
+    filt = np.exp(- freqs_norm2 * 0.5 * one_over_sigma_fspace2)
     farr *= filt
     # zero nyquist at the end
-    farr[ny//2, :] = 0.0
+    farr[0, :] = 0.0
+    farr[-1, :] = 0.0
     farr[:, -1] = 0.0
     return farr
 
@@ -198,8 +203,8 @@ def estimate_background(
             pad_mic_with_zero( arr=x, N=N_zp ) 
         ),
         frame_shape=(N_zp, N_zp),
-        one_over_sigma2=one_over_sigma_fspace2
-    )
+        one_over_sigma_fspace2=one_over_sigma_fspace2,
+    )    
     do_irfft_crop = lambda x: trim_mic(
         arr=fft.irfft2_center( x ), 
         shape=out_shape
@@ -306,7 +311,7 @@ def estimate_subtract_background(
     # "full width half max" - a parameterization of gaussians used for smoothing
     fwhm = (200 / psize) / N
     # this is a padded 1024x1024 bg size
-    bg_bin = estimate_background(mic_bin, fwhm, 1024)
+    bg_bin = estimate_background(mic_bin, fwhm, out_N=1024)
     bg_full = upsample_mic(
         arr=bg_bin,
         upsample_factor=bg_binfactor

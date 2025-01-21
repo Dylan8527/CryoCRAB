@@ -95,7 +95,7 @@ def get_upsample_softmask(
     freqs_out = get_rfft_center_freqs(frame_shape_out, psize_out)
     softmask  = 1. - smoothstep(
         1./(psize_in + cutoff_width) / 2.0,
-        1./psize_in,
+        1./psize_in/2.0,
         np.linalg.norm(freqs_out, axis=-1)
     )
     
